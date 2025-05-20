@@ -10,29 +10,32 @@ from bs4 import BeautifulSoup
 def run_scraper():
     options = Options()
     #options.add_argument('--headless')
-    options.add_argument('--disable-gpu')
+    options.add_argument("user-agent=Mozilla/5.0 ...")
 
     driver = webdriver.Chrome(service=Service(ChromeDriverManager().install()), options=options)
 
-    url = 'https://www.dropit.bm/shop/frozen_foods/d/22886624#!/?limit=96&page=1'  # 更換成你需要爬的頁面
+    url = 'http://www.playno1.com/portal.php?mod=list&catid=23&page=1'  # 更換成你需要爬的頁面
     driver.get(url)
 
     WebDriverWait(driver, 30).until(
-        EC.presence_of_element_located((By.CSS_SELECTOR, ".fp-item-content"))
+        EC.presence_of_element_located((By.CSS_SELECTOR, "div.fire_float"))
     )
 
     soup = BeautifulSoup(driver.page_source, 'html.parser')
-    items = soup.select('div.fp-item-content')
+    items = soup.select('div.fire_float')
 
     for item in items:
-        name_tag = item.select_one('div.fp-item-name span a')
-        price_tag = item.select_one('div.fp-item-price span.fp-item-base-price')
-        unit_tag = item.select_one('div.fp-item-price span.fp-item-size')
-        product_name = name_tag.text.strip() if name_tag else 'N/A'
-        product_price = price_tag.text.strip() if price_tag else 'N/A'
-        product_unit = unit_tag.text.strip() if unit_tag else 'N/A'
+        image_tag = item.select_one('div.fire_imgbox a img')
+        tiltle_tag = item.select_one('h3 a')
+        date_tag = item.select_one('.fire_left')
+        other_tag = item.select_one('.fire_right')
 
-        print(f'product_name: {product_name}, product_price: {product_price}, product_unit: {product_unit}')
+        image_url = image_tag.get('src') if image_tag and image_tag.has_attr('src') else 'N/A'
+        title = tiltle_tag.text.strip() if tiltle_tag else 'N/A'
+        date_string = date_tag.text.strip() if date_tag else 'N/A'
+        other = other_tag.text.strip() if other_tag else 'N/A'
+
+        print(f'image_url: {image_url}, title: {title}, date_string: {date_string}, other: {other}')
         print('\n')
 
     driver.quit()
